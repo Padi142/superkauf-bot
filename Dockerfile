@@ -13,8 +13,5 @@ RUN npm install
 # Copy the local code to the container
 COPY . .
 
-# Expose the port your bot will run on
-EXPOSE 3000
-
 # Command to run your bot
 CMD ["node", "index.js"]
