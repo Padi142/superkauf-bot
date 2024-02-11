@@ -28,6 +28,8 @@ client.login(process.env.DISCORD_TOKEN);
 const wss = new WebSocketServer({ port: 8080 });
 
 wss.on("connection", function connection(ws) {
+  console.log("Client connected!");
+
   ws.on("message", function message(data) {
     const decodedData = data.toString("utf8");
 
@@ -70,13 +72,20 @@ supabase
 
         // Sending the embed to the specific channel
 
-        channel1.send({ embeds: [embed] });
-        channel2.send({ embeds: [embed] });
+        // channel1.send({ embeds: [embed] });
+        // channel2.send({ embeds: [embed] });
 
         //Send to websocket
-        wss.emit("connection", JSON.stringify(payload.new));
-	      console.log("New post! :" +  payload.new.id);
+        wss.broadcast(JSON.stringify(payload.new));
+
+        console.log("New post! :" + payload.new.id);
       }
     }
   )
   .subscribe();
+
+wss.broadcast = function broadcast(msg) {
+  wss.clients.forEach(function each(client) {
+    client.send(msg);
+  });
+};
