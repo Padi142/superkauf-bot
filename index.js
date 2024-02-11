@@ -29,8 +29,8 @@ supabase
     "postgres_changes",
     { event: "UPDATE", schema: "public", table: "posts" },
     (payload) => {
-      console.log("New post: ", payload.new.id);
-      if (payload.new.is_checked) {
+      console.log("Detected change post_id: ", payload.new.id);
+      if (!payload.old.is_checked && payload.new.is_checked) {
         const channel1 = client.channels.cache.get("1187380052829143121");
         const channel2 = client.channels.cache.get("1205923807257432106");
 
@@ -59,6 +59,7 @@ supabase
 
         channel1.send({ embeds: [embed] });
         channel2.send({ embeds: [embed] });
+	console.log("New post! :" +  payload.new.id);
       }
     }
   )
