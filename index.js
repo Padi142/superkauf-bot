@@ -1,5 +1,6 @@
 const { createClient } = require("@supabase/supabase-js");
 const { EmbedBuilder } = require("discord.js");
+const { WebSocketServer } = require("ws");
 const dotenv = require("dotenv");
 const { Client, Events, GatewayIntentBits } = require("discord.js");
 
@@ -22,6 +23,18 @@ client.once(Events.ClientReady, (readyClient) => {
 
 // Log in to Discord with your client's token
 client.login(process.env.DISCORD_TOKEN);
+
+//Websocket server
+const wss = new WebSocketServer({ port: 8080 });
+
+wss.on("connection", function connection(ws) {
+  ws.on("message", function message(data) {
+    const decodedData = data.toString("utf8");
+
+    console.log("Ws message: %s", decodedData);
+    ws.send(JSON.stringify(decodedData));
+  });
+});
 
 supabase
   .channel("room1")
@@ -59,6 +72,9 @@ supabase
 
         channel1.send({ embeds: [embed] });
         channel2.send({ embeds: [embed] });
+
+        //Send to websocket
+        wss.emit("connection", JSON.stringify(payload.new));
       }
     }
   )
