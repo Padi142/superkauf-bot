@@ -72,8 +72,8 @@ supabase
 
         // Sending the embed to the specific channel
 
-        // channel1.send({ embeds: [embed] });
-        // channel2.send({ embeds: [embed] });
+        channel1.send({ embeds: [embed] });
+        channel2.send({ embeds: [embed] });
 
         //Send to websocket
         wss.broadcast(JSON.stringify(payload.new));
