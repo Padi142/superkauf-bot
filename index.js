@@ -43,7 +43,7 @@ supabase
   .on(
     "postgres_changes",
     { event: "UPDATE", schema: "public", table: "posts" },
-    (payload) => {
+    async (payload) => {
       console.log("Detected change post_id: ", payload.new.id);
       if (!payload.old.is_checked && payload.new.is_checked) {
         const channel1 = client.channels.cache.get("1187380052829143121");
@@ -60,8 +60,7 @@ supabase
           .setColor("#3498db")
           .setDescription(payload.new.description)
           .addFields(
-            { name: "StoreId", value: "" + payload.new.store },
-            { name: "Price", value: "" + payload.new.price + "Kč" }
+            { name: "Price", value: "" + payload.new.price + "Kč", inline: true  }
           )
           .setImage(payload.new.image)
           .setFooter({
@@ -69,6 +68,24 @@ supabase
             iconURL:
               "https://wwrhodyufftnwdbafguo.supabase.co/storage/v1/object/public/profile_pics/kauf_logo.png",
           });
+
+        // Get store data
+        const { data: storeData, error } = await supabase
+          .from('stores')
+          .select()
+          .eq('id', payload.new.store)
+          .limit(1);
+
+        if (error) {
+          console.error();
+        }
+
+        // Add store info into embed
+        if (storeData.length > 0) {
+          embed.addFields(
+            { name: "Store", value: storeData[0]?.name, inline: true },
+          );
+        }
 
         // Sending the embed to the specific channel
 
