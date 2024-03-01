@@ -56,35 +56,55 @@ supabase
 
         // Creating an embed
         const embed = new EmbedBuilder()
-          .setTitle("New Post!")
-          .setColor("#3498db")
+          .setColor("#715df2")
           .setDescription(payload.new.description)
-          .addFields(
-            { name: "Price", value: "" + payload.new.price + "Kč", inline: true  }
-          )
+          .addFields({
+            name: "Price",
+            value: "" + payload.new.price + "Kč",
+            inline: true,
+          })
           .setImage(payload.new.image)
-          .setFooter({
-            text: "TurboDeal",
-            iconURL:
-              "https://wwrhodyufftnwdbafguo.supabase.co/storage/v1/object/public/profile_pics/kauf_logo.png",
+          .setAuthor({
+            name: "SuperKauf",
+            url: "https://superkauf.krejzac.cz",
+            iconURL: "https://storage.googleapis.com/superkauf/logos/logo1.png",
           });
-
         // Get store data
-        const { data: storeData, error } = await supabase
-          .from('stores')
+        const { data: storeData, error: storeError } = await supabase
+          .from("stores")
           .select()
-          .eq('id', payload.new.store)
+          .eq("id", payload.new.store)
           .limit(1);
 
-        if (error) {
+        if (storeError) {
+          console.error();
+        }
+
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select()
+          .eq("id", payload.new.author)
+          .limit(1);
+
+        if (userError) {
           console.error();
         }
 
         // Add store info into embed
         if (storeData.length > 0) {
-          embed.addFields(
-            { name: "Store", value: storeData[0]?.name, inline: true },
-          );
+          embed.addFields({
+            name: "Store",
+            value: storeData[0]?.name,
+            inline: true,
+          });
+        }
+
+        // Add user info into embed
+        if (userData.length > 0) {
+          embed.setFooter({
+            text: userData[0]?.username,
+            iconURL: userData[0]?.profile_picture,
+          });
         }
 
         // Sending the embed to the specific channel
@@ -93,7 +113,13 @@ supabase
         channel2.send({ embeds: [embed] });
 
         //Send to websocket
-        wss.broadcast(JSON.stringify(payload.new));
+        wss.broadcast(
+          JSON.stringify({
+            post: payload.new,
+            user: userData[0],
+            store: storeData[0],
+          })
+        );
 
         console.log("New post! :" + payload.new.id);
       }
