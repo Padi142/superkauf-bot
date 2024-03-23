@@ -127,6 +127,60 @@ supabase
   )
   .subscribe();
 
+supabase
+  .channel("room1")
+  .on(
+    "postgres_changes",
+    { event: "INSERT", schema: "public", table: "reports" },
+    async (payload) => {
+      console.log("Detected reported post: ", payload.new.id);
+      if (!payload.old.is_checked && payload.new.is_checked) {
+        const channel1 = client.channels.cache.get("1187380052829143121");
+
+        if (!channel1) {
+          console.error(`Channel with ID ${CHANNEL_ID} not found.`);
+          return;
+        }
+
+        // Creating an embed
+        const embed = new EmbedBuilder()
+          .setColor("#FF0000")
+          .setDescription(payload.new.description)
+          .setTitle("⚠️ Report on post: " + payload.new.post_id)
+          .setImage(payload.new.image)
+          .setAuthor({
+            name: "SuperKauf",
+            url: "https://superkauf.krejzac.cz",
+            iconURL: "https://storage.googleapis.com/superkauf/logos/logo1.png",
+          });
+
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select()
+          .eq("id", payload.new.author)
+          .limit(1);
+
+        if (userError) {
+          console.error();
+        }
+        // Add user info into embed
+        if (userData.length > 0) {
+          embed.setFooter({
+            text: userData[0]?.username + " - " + userData[0]?.id,
+            iconURL: userData[0]?.profile_picture,
+          });
+        }
+
+        // Sending the embed to the specific channel
+
+        channel1.send({ embeds: [embed] });
+
+        console.log("New report! :" + payload.new.id);
+      }
+    }
+  )
+  .subscribe();
+
 wss.broadcast = function broadcast(msg) {
   wss.clients.forEach(function each(client) {
     client.send(msg);
