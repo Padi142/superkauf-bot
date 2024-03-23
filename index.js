@@ -150,9 +150,9 @@ supabase
       // Creating an embed
       const embed = new EmbedBuilder()
         .setColor("#FF0000")
-        .setDescription(postData.description)
-        .setTitle("⚠️ Report on post: " + postData.post_id)
-        .setImage(postData.image)
+        .setDescription(postData[0]?.description)
+        .setTitle("⚠️ Report on post: " + payload.new.id)
+        .setImage(postData[0]?.image)
         .setAuthor({
           name: "SuperKauf",
           url: "https://superkauf.krejzac.cz",
@@ -162,7 +162,7 @@ supabase
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select()
-        .eq("id", postData.author)
+        .eq("id", postData[0]?.author)
         .limit(1);
 
       if (userError) {
@@ -180,7 +180,7 @@ supabase
 
       channel1.send({ embeds: [embed] });
 
-      console.log("New report! :" + postData.id);
+      console.log("New report! :" + postData[0]?.id);
     }
   )
   .subscribe();
