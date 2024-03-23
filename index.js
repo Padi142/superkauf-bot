@@ -141,12 +141,18 @@ supabase
         return;
       }
 
+      const { data: postData, error: postError } = await supabase
+        .from("posts")
+        .select()
+        .eq("id", payload.new.reported_post)
+        .limit(1);
+
       // Creating an embed
       const embed = new EmbedBuilder()
         .setColor("#FF0000")
-        .setDescription(payload.new.description)
-        .setTitle("⚠️ Report on post: " + payload.new.post_id)
-        .setImage(payload.new.image)
+        .setDescription(postData.description)
+        .setTitle("⚠️ Report on post: " + postData.post_id)
+        .setImage(postData.image)
         .setAuthor({
           name: "SuperKauf",
           url: "https://superkauf.krejzac.cz",
@@ -156,7 +162,7 @@ supabase
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select()
-        .eq("id", payload.new.author)
+        .eq("id", postData.author)
         .limit(1);
 
       if (userError) {
@@ -174,7 +180,7 @@ supabase
 
       channel1.send({ embeds: [embed] });
 
-      console.log("New report! :" + payload.new.id);
+      console.log("New report! :" + postData.id);
     }
   )
   .subscribe();
