@@ -128,7 +128,7 @@ supabase
   .subscribe();
 
 supabase
-  .channel("room1")
+  .channel("room2")
   .on(
     "postgres_changes",
     { event: "INSERT", schema: "public", table: "reports" },
