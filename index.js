@@ -150,7 +150,7 @@ supabase
       // Creating an embed
       const embed = new EmbedBuilder()
         .setColor("#FF0000")
-        .setDescription(postData[0]?.description)
+        .setDescription(payload.new.reason)
         .setTitle("⚠️ Report on post: " + payload.new.id)
         .setImage(postData[0]?.image)
         .setAuthor({
@@ -158,6 +158,14 @@ supabase
           url: "https://superkauf.krejzac.cz",
           iconURL: "https://storage.googleapis.com/superkauf/logos/logo1.png",
         });
+
+      if (postData.length > 0) {
+        embed.addFields({
+          name: "Description",
+          value: postData[0]?.description,
+          inline: false,
+        });
+      }
 
       const { data: userData, error: userError } = await supabase
         .from("users")
